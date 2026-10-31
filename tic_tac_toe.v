@@ -1,4 +1,4 @@
-module game (
+module tik_tac_toe_game (
     input clk,
     input reset,
     input play,
@@ -30,7 +30,7 @@ module game (
     winner_detector win_detect_unit (
         .pos1(pos1), .pos2(pos2), .pos3(pos3), .pos4(pos4), 
         .pos5(pos5), .pos6(pos6), .pos7(pos7), .pos8(pos8),
-        .pos9(pos9), .win(win), .who(who)
+        .pos9(pos9), .winner(win), .who(who)
     );
     
     position_decoder pd1(
@@ -78,33 +78,28 @@ module position_registers (
             pos8 <= 2'b00;
             pos9 <= 2'b00;
         end else begin
-            // Handling positions for each cell (position 1 to 9)
-            handle_position(pos1, pc_en[0], pl_en[0], illegal_move);
-            handle_position(pos2, pc_en[1], pl_en[1], illegal_move);
-            handle_position(pos3, pc_en[2], pl_en[2], illegal_move);
-            handle_position(pos4, pc_en[3], pl_en[3], illegal_move);
-            handle_position(pos5, pc_en[4], pl_en[4], illegal_move);
-            handle_position(pos6, pc_en[5], pl_en[5], illegal_move);
-            handle_position(pos7, pc_en[6], pl_en[6], illegal_move);
-            handle_position(pos8, pc_en[7], pl_en[7], illegal_move);
-            handle_position(pos9, pc_en[8], pl_en[8], illegal_move);
-        end
-    end
-    
-    task handle_position(
-        output reg [1:0] pos,
-        input pc_en, pl_en, illegal_move
-    );
-        begin
-            if (illegal_move) begin
-                pos <= pos;
-            end else if (pc_en) begin
-                pos <= 2'b10;  // Computer's move
-            end else if (pl_en) begin
-                pos <= 2'b01;  // Player's move
+            if (!illegal_move) begin
+                if (pc_en[0]) pos1 <= 2'b10;
+                else if (pl_en[0]) pos1 <= 2'b01;
+                if (pc_en[1]) pos2 <= 2'b10;
+                else if (pl_en[1]) pos2 <= 2'b01;
+                if (pc_en[2]) pos3 <= 2'b10;
+                else if (pl_en[2]) pos3 <= 2'b01;
+                if (pc_en[3]) pos4 <= 2'b10;
+                else if (pl_en[3]) pos4 <= 2'b01;
+                if (pc_en[4]) pos5 <= 2'b10;
+                else if (pl_en[4]) pos5 <= 2'b01;
+                if (pc_en[5]) pos6 <= 2'b10;
+                else if (pl_en[5]) pos6 <= 2'b01;
+                if (pc_en[6]) pos7 <= 2'b10;
+                else if (pl_en[6]) pos7 <= 2'b01;
+                if (pc_en[7]) pos8 <= 2'b10;
+                else if (pl_en[7]) pos8 <= 2'b01;
+                if (pc_en[8]) pos9 <= 2'b10;
+                else if (pl_en[8]) pos9 <= 2'b01;
             end
         end
-    endtask
+    end
 endmodule
 
 module fsm_controller (
@@ -247,7 +242,7 @@ module winner_detector (
     winner_detect_3 u5(pos2, pos5, pos8, win5, who5);
     winner_detect_3 u6(pos3, pos6, pos9, win6, who6);
     winner_detect_3 u7(pos1, pos5, pos9, win7, who7);
-    winner_detect_3 u8(pos3, pos5, pos6, win8, who8);
+    winner_detect_3 u8(pos3, pos5, pos7, win8, who8);
 
     assign winner = |{win1, win2, win3, win4, win5, win6, win7, win8};
     assign who = |{who1, who2, who3, who4, who5, who6, who7, who8};
@@ -267,5 +262,5 @@ module winner_detect_3 (
     assign temp3 = (pos0 != 2'b00);
     
     assign winner = temp3 & temp2;
-    assign who = (temp2 == 2'b00) ? pos0 : 2'b00;
+    assign who = winner ? pos0 : 2'b00;
 endmodule
